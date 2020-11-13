@@ -42,7 +42,7 @@ final class AsyncGuaranteeSpec[F[_]](testkit: EffectTestkit[F]) extends BaseEffe
           fa = fromOption(inputEx)
         ) (
           _ => result.fold(ex => F.failed(ex), t => F.delay(t))
-        ) { (_, _) =>
+        ) { _ =>
           F.delay {
             counter += 1
           } flatMap { _ =>

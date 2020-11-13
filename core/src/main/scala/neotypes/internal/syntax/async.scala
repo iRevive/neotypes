@@ -9,12 +9,13 @@ private[neotypes] object async {
     def flatMap[B](f: A => F[B])(implicit F: Async[F]): F[B] =
       F.flatMap(fa)(f)
 
-    def guarantee[B](f: A => F[B])(finalizer: (A, Option[Throwable]) => F[Unit])(implicit F: Async[F]): F[B] =
+    def guarantee[B](f: A => F[B])(finalizer: Outcome[A] => F[Unit])(implicit F: Async[F]): F[B] =
       F.guarantee(fa)(f)(finalizer)
 
     def guarantee(finalizer: Option[Throwable] => F[Unit])(implicit F: Async[F]): F[A] =
       F.guarantee(F.delay(()))(_ => fa) {
-        case (_, ex) => finalizer(ex)
+        case Outcome.Error(_, ex) => finalizer(Some(ex))
+        case _ => finalizer(None)
       }
 
     def recover[B >: A](f: PartialFunction[Throwable, B])(implicit F: Async[F]): F[B] =

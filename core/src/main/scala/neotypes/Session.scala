@@ -40,8 +40,12 @@ object Session {
 
     override final def transact[T](config: NeoTransactionConfig)(txF: Transaction[F] => F[T]): F[T] =
       transaction(config).guarantee(txF) {
-        case (tx, None)    => tx.commit
-        case (tx, Some(_)) => tx.rollback
+        case Outcome.Completed(tx) =>
+          tx.commit
+        case Outcome.Error(tx, _) =>
+          tx.rollback
+        case Outcome.Canceled(tx) =>
+          tx.rollback
       }
 
     override final def close: F[Unit] =

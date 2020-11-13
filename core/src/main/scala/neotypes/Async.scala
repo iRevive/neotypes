@@ -25,7 +25,7 @@ trait Async[F[_]] {
 
   private[neotypes] def guarantee[A, B](fa: F[A])
                                        (f: A => F[B])
-                                       (finalizer: (A, Option[Throwable]) => F[Unit]): F[B]
+                                       (finalizer: Outcome[A] => F[Unit]): F[B]
 
   private[neotypes] def makeLock: F[Lock]
 
@@ -36,8 +36,22 @@ trait Async[F[_]] {
   private[neotypes] def resource[A](input: F[A])(close: A => F[Unit]): R[A]
 }
 
+
+sealed abstract class Outcome[+A] extends Product with Serializable
+
+object Outcome {
+  final case class Completed[A](a: A) extends Outcome[A]
+  final case class Error[A](a: A, e: Throwable) extends Outcome[A]
+  final case class Canceled[A](a: A) extends Outcome[A]
+
+  def complete[A](v: A): Outcome[A] = Completed(v)
+  def error[A](v: A, e: Throwable): Outcome[A] = Error(v, e)
+  def canceled[A](v: A): Outcome[A] = Canceled(v)
+}
+
 object Async {
   type Aux[F[_], _R[_]] = Async[F] { type R[A] = _R[A] }
+
   private[neotypes] type Id[A] = A
 
   implicit def futureAsync(implicit ec: ExecutionContext): Async.Aux[Future, Id] =
@@ -65,11 +79,11 @@ object Async {
 
       override final def guarantee[A, B](fa: Future[A])
                                         (f: A => Future[B])
-                                        (finalizer: (A, Option[Throwable]) => Future[Unit]): Future[B] =
+                                        (finalizer: Outcome[A] => Future[Unit]): Future[B] =
         fa.flatMap { a =>
           f(a).transformWith {
-            case Success(b)  => finalizer(a, None).map(_ => b)
-            case Failure(ex) => finalizer(a, Some(ex)).transform(_ => Failure(ex))
+            case Success(b)  => finalizer(Outcome.complete(a)).map(_ => b)
+            case Failure(ex) => finalizer(Outcome.error(a, ex)).transform(_ => Failure(ex))
           }
         }
 

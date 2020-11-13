@@ -74,7 +74,9 @@ final class Driver[F[_]] private[neotypes] (private val driver: NeoDriver) {
                                   (implicit F: Async[F]): F[T] = {
     val config =  SessionConfig.builder.withDefaultAccessMode(accessMode).build()
     createSession(config).guarantee(sessionWork) {
-      case (session, _) => session.close
+      case Outcome.Completed(session) => session.close
+      case Outcome.Error(session, _) => session.close
+      case Outcome.Canceled(session) => session.close
     }
   }
 
