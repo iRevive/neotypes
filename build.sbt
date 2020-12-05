@@ -66,7 +66,7 @@ val commonSettings = Seq(
       "dimafeng@gmail.com",
       url("https://github.com/dimafeng")
     )
-  )
+  ),
 
   Global / parallelExecution := false
 )
