@@ -1,6 +1,5 @@
 import Dependencies._
 import xerial.sbt.Sonatype._
-import ReleaseTransformations._
 
 val neo4jDriverVersion = "4.2.0"
 val scalaCollectionCompatVersion = "2.3.1"
@@ -65,14 +64,10 @@ val commonSettings = Seq(
       Some("releases" at nexus + "service/local/staging/deploy/maven2")
   },
   publishMavenStyle := true,
-  sonatypeProfileName := "neotypes",
-  sonatypeProjectHosting := Some(GitLabHosting("neotypes", "neotypes", "dimafeng@gmail.com")),
   licenses := Seq("The MIT License (MIT)" -> new URL("https://opensource.org/licenses/MIT")),
-  ThisBuild / organization := "com.dimafeng",
+  ThisBuild / organization := "io.github.irevive",
 
-  Global / parallelExecution := false,
-
-  releaseCrossBuild := true
+  Global / parallelExecution := false
 )
 
 lazy val noPublishSettings = Seq(
@@ -93,22 +88,6 @@ lazy val root = (project in file("."))
     catsData
   )
   .settings(noPublishSettings)
-  .settings(
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      inquireVersions,
-      runClean,
-      //runTest,
-      setReleaseVersion,
-      commitReleaseVersion,
-      tagRelease,
-      releaseStepCommandAndRemaining("+publishSigned"),
-      setNextVersion,
-      commitNextVersion,
-      //releaseStepCommand("sonatypeReleaseAll"),
-      pushChanges
-    )
-  )
 
 lazy val core = (project in file("core"))
   .settings(commonSettings)
