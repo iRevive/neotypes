@@ -56,6 +56,7 @@ val commonSettings = Seq(
   /**
     * Publishing
     */
+  homepage     := Some(url("https://github.com/iRevive/neotypes")),
   licenses := Seq("The MIT License (MIT)" -> new URL("https://opensource.org/licenses/MIT")),
   ThisBuild / organization := "io.github.irevive",
 
