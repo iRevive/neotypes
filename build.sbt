@@ -59,6 +59,14 @@ val commonSettings = Seq(
   homepage     := Some(url("https://github.com/iRevive/neotypes")),
   licenses := Seq("The MIT License (MIT)" -> new URL("https://opensource.org/licenses/MIT")),
   ThisBuild / organization := "io.github.irevive",
+  developers := List(
+    Developer(
+      "dimafeng",
+      "Dmitry",
+      "dimafeng@gmail.com",
+      url("https://github.com/dimafeng")
+    )
+  )
 
   Global / parallelExecution := false
 )
