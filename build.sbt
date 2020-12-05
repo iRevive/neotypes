@@ -48,22 +48,14 @@ ThisBuild / scmInfo ~= {
   }
 
 val commonSettings = Seq(
-  ThisBuild / scalaVersion := "2.12.12",
-  crossScalaVersions := Seq("2.13.3", "2.12.12"),
+  ThisBuild / scalaVersion := "2.13.3",
+  //crossScalaVersions := Seq("2.13.3", "2.12.12"),
   scalacOptions += "-Ywarn-macros:after",
   Test / scalacOptions := Seq("-feature", "-deprecation"),
 
   /**
     * Publishing
     */
-  publishTo := {
-    val nexus = "https://oss.sonatype.org/"
-    if (isSnapshot.value)
-      Some("snapshots" at nexus + "content/repositories/snapshots")
-    else
-      Some("releases" at nexus + "service/local/staging/deploy/maven2")
-  },
-  publishMavenStyle := true,
   licenses := Seq("The MIT License (MIT)" -> new URL("https://opensource.org/licenses/MIT")),
   ThisBuild / organization := "io.github.irevive",
 
