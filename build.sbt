@@ -77,14 +77,14 @@ lazy val root = (project in file("."))
   .aggregate(
     core,
     catsEffect,
-    monix,
-    zio,
-    akkaStream,
-    fs2Stream,
-    monixStream,
-    zioStream,
+    //monix,
+    //zio,
+    //akkaStream,
+    //fs2Stream,
+    //monixStream,
+    //zioStream,
     refined,
-    catsData
+    //catsData
   )
   .settings(noPublishSettings)
 
