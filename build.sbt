@@ -1,6 +1,5 @@
 import Dependencies._
 import xerial.sbt.Sonatype._
-import ReleaseTransformations._
 
 val neo4jDriverVersion = "4.2.0"
 val scalaCollectionCompatVersion = "2.3.1"
@@ -46,40 +45,28 @@ ThisBuild / scmInfo ~= {
     }
   }
 
-// Global settings.
-ThisBuild / scalaVersion := "2.12.12"
-ThisBuild / crossScalaVersions := Seq("2.13.4", "2.12.12")
-ThisBuild / organization := "com.dimafeng"
-
-def removeScalacOptionsInTest(scalaVersion: String) =
-  CrossVersion.partialVersion(scalaVersion) match {
-    case Some((2, 12)) => Seq("-Ywarn-value-discard", "-Ywarn-unused:params")
-    case _ => Seq("-Wvalue-discard", "-Wunused:explicits", "-Wunused:params", "-Wunused:imports")
-  }
-
-// Common settings.
 val commonSettings = Seq(
+  ThisBuild / scalaVersion := "2.13.3",
+  //crossScalaVersions := Seq("2.13.3", "2.12.12"),
   scalacOptions += "-Ywarn-macros:after",
-  Test / parallelExecution := false,
-  Test / fork := true,
-  Test / scalacOptions --= removeScalacOptionsInTest(scalaVersion.value),
+  Test / scalacOptions := Seq("-feature", "-deprecation"),
 
   /**
     * Publishing
     */
-  publishTo := {
-    val nexus = "https://oss.sonatype.org/"
-    if (isSnapshot.value)
-      Some("snapshots" at nexus + "content/repositories/snapshots")
-    else
-      Some("releases" at nexus + "service/local/staging/deploy/maven2")
-  },
-  publishMavenStyle := true,
-  sonatypeProfileName := "neotypes",
-  sonatypeProjectHosting := Some(GitLabHosting("neotypes", "neotypes", "dimafeng@gmail.com")),
+  homepage     := Some(url("https://github.com/iRevive/neotypes")),
   licenses := Seq("The MIT License (MIT)" -> new URL("https://opensource.org/licenses/MIT")),
+  ThisBuild / organization := "io.github.irevive",
+  developers := List(
+    Developer(
+      "dimafeng",
+      "Dmitry",
+      "dimafeng@gmail.com",
+      url("https://github.com/dimafeng")
+    )
+  ),
 
-  releaseCrossBuild := true
+  Global / parallelExecution := false
 )
 
 lazy val noPublishSettings = Seq(
@@ -100,22 +87,6 @@ lazy val root = (project in file("."))
     catsData
   )
   .settings(noPublishSettings)
-  .settings(
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      inquireVersions,
-      runClean,
-      //runTest,
-      setReleaseVersion,
-      commitReleaseVersion,
-      tagRelease,
-      releaseStepCommandAndRemaining("+publishSigned"),
-      setNextVersion,
-      commitNextVersion,
-      //releaseStepCommand("sonatypeReleaseAll"),
-      pushChanges
-    )
-  )
 
 lazy val core = (project in file("core"))
   .settings(commonSettings)
