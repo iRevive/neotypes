@@ -1,7 +1,6 @@
 package neotypes.cats.effect
 
 import cats.effect.{Concurrent, ExitCase, Resource}
-import cats.effect.concurrent.MVar
 import neotypes.Outcome
 
 trait CatsEffect {

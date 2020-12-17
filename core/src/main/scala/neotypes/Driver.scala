@@ -51,9 +51,9 @@ sealed trait StreamingDriver[S[_], F[_]] extends Driver[F] {
 
 object Driver {
   private def txFinalizer[F[_]]: Outcome[Transaction[F]] => F[Unit] = {
-    case Outcome.Completed(session) => tx.commit
-    case Outcome.Error(session, _) => tx.rollback
-    case Outcome.Canceled(session) => tx.rollback
+    case Outcome.Completed(tx) => tx.commit
+    case Outcome.Error(tx, _) => tx.rollback
+    case Outcome.Canceled(tx) => tx.rollback
   }
 
   private class DriverImpl[F[_]](driver: NeoDriver)

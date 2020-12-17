@@ -9,7 +9,7 @@ trait Stream[S[_]] {
 
   private[neotypes] def fromRx[A](publisher: Publisher[A]): S[A]
 
-  private[neotypes] def resource[A, B](r: F[A])(f: A => S[B])(finalizer: (A, Option[Throwable]) => F[Unit]): S[B]
+  private[neotypes] def resource[A, B](r: F[A])(f: A => S[B])(finalizer: Outcome[A] => F[Unit]): S[B]
 
   private[neotypes] def map[A, B](sa: S[A])(f: A => B): S[B]
 
