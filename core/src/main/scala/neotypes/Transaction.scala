@@ -15,7 +15,7 @@ import org.neo4j.driver.reactive.{RxSession => NeoRxSession, RxTransaction => Ne
 import scala.collection.compat._
 import scala.jdk.CollectionConverters._
 
-sealed trait Transaction[F[_]] {
+trait Transaction[F[_]] {
   def execute[T](query: String, params: Map[String, QueryParam] = Map.empty)
                 (implicit executionMapper: ExecutionMapper[T]): F[T]
 
