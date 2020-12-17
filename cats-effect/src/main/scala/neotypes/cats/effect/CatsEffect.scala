@@ -1,6 +1,8 @@
 package neotypes.cats.effect
 
 import cats.effect.{Concurrent, ExitCase, Resource}
+import cats.effect.concurrent.MVar
+import neotypes.Outcome
 
 trait CatsEffect {
   private[neotypes] final type FResource[F[_]] = { type R[A] = Resource[F, A] }
@@ -24,10 +26,14 @@ trait CatsEffect {
       override private[neotypes] def fromEither[A](e: => Either[Throwable, A]): F[A] =
         F.fromEither(e)
 
-      override private[neotypes] def guarantee[A, B](fa: F[A])(f: A => F[B])(finalizer: (A, Option[Throwable]) => F[Unit]): F[B] =
+      override private[neotypes] def guarantee[A, B](fa: F[A])(f: A => F[B])(finalizer: Outcome[A] => F[Unit]): F[B] =
         Resource.makeCase(fa) {
-          case (a, ExitCase.Completed | ExitCase.Canceled) => finalizer(a, None)
-          case (a, ExitCase.Error(ex))                     => finalizer(a, Some(ex))
+          case (a, ExitCase.Completed) =>
+            finalizer(Outcome.complete(a))
+          case (a, ExitCase.Error(ex)) =>
+            finalizer(Outcome.error(a, ex))
+          case (a, ExitCase.Canceled)  =>
+            finalizer(Outcome.canceled(a))
         }.use(f)
 
       override private[neotypes] def resource[A](a: => A)(close: A => F[Unit]): Resource[F, A] =
