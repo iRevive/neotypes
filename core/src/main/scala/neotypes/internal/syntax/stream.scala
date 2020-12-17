@@ -5,7 +5,7 @@ import org.reactivestreams.Publisher
 
 import scala.collection.compat.Factory
 
-private[neotypes] object stream {
+object stream {
   implicit class StreamOps[S[_], A](private val sa: S[A]) extends AnyVal {
     def mapS[B](f: A => B)(implicit S: Stream[S]): S[B] =
       S.map(sa)(f)

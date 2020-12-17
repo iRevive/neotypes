@@ -3,7 +3,7 @@ package internal.syntax
 
 import java.util.concurrent.{CompletionException, CompletionStage}
 
-private[neotypes] object stage {
+object stage {
   private final val defaultExHandler: PartialFunction[Throwable, Either[Throwable, Nothing]] = {
     case ex: Throwable => Left(ex)
   }

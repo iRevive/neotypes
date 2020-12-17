@@ -4,7 +4,7 @@ package internal.utils
 import scala.collection.compat._
 import scala.collection.mutable.Builder
 
-private[neotypes] object traverse {
+object traverse {
   final def traverseAs[A, B, C](factory: Factory[B, C])
                                (iter: Iterator[A])
                                (f: A => Either[Throwable, B]): Either[Throwable, C] = {

@@ -1,7 +1,7 @@
 package neotypes
 package internal.syntax
 
-private[neotypes] object async {
+private object async {
   implicit class AsyncOps[F[_], A](private val fa: F[A]) extends AnyVal {
     def map[B](f: A => B)(implicit F: Async[F]): F[B] =
       F.map(fa)(f)

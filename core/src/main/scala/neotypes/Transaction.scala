@@ -49,7 +49,7 @@ sealed trait StreamingTransaction[S[_], F[_]] extends Transaction[F] {
 }
 
 object Transaction {
-  private def recordToList(record: Record): List[(String, Value)] =
+  def recordToList(record: Record): List[(String, Value)] =
     record.fields.asScala.iterator.map(p => p.key -> p.value).toList
 
   private[neotypes] def apply[F[_]](transaction: NeoAsyncTransaction, session: NeoAsyncSession)
