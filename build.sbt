@@ -1,23 +1,23 @@
 import Dependencies._
 import xerial.sbt.Sonatype._
 
-val neo4jDriverVersion = "4.2.0"
-val scalaCollectionCompatVersion = "2.3.1"
-val shapelessVersion = "2.3.3"
-val testcontainersNeo4jVersion = "1.15.0"
-val testcontainersScalaVersion = "0.38.7"
+val neo4jDriverVersion = "4.2.5"
+val scalaCollectionCompatVersion = "2.4.3"
+val shapelessVersion = "2.3.5"
+val testcontainersNeo4jVersion = "1.15.3"
+val testcontainersScalaVersion = "0.39.3"
 val mockitoVersion = "1.10.19"
-val scalaTestVersion = "3.2.3"
-val slf4jVersion = "1.7.30"
-val catsVersion = "2.3.0"
-val catsEffectsVersion = "2.3.0"
+val scalaTestVersion = "3.2.8"
+val logbackVersion = "1.2.3"
+val catsVersion = "2.6.0"
+val catsEffectsVersion = "3.1.0"
 val monixVersion = "3.3.0"
-val akkaStreamVersion = "2.6.10"
-val fs2Version = "2.4.6"
-val zioVersion = "1.0.3"
-val refinedVersion = "0.9.19"
-
-//lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
+val akkaStreamVersion = "2.6.14"
+val fs2Version = "3.0.2"
+val zioVersion = "1.0.7"
+val zioInteropReactiveStreamsVersion = "1.3.4"
+val refinedVersion = "0.9.24"
+val enumeratumVersion = "1.6.1"
 
 // Fix scmInfo in Github Actions.
 // See: https://github.com/sbt/sbt-git/issues/171
@@ -48,7 +48,7 @@ ThisBuild / scmInfo ~= {
   }
 
 val commonSettings = Seq(
-  ThisBuild / scalaVersion := "2.13.3",
+  ThisBuild / scalaVersion := "2.13.5",
   //crossScalaVersions := Seq("2.13.3", "2.12.12"),
   scalacOptions += "-Ywarn-macros:after",
   Test / scalacOptions := Seq("-feature", "-deprecation"),
@@ -86,7 +86,8 @@ lazy val root = (project in file("."))
     monixStream,
     zioStream,
     refined,
-    catsData
+    catsData,
+    enumeratum
   )
   .settings(noPublishSettings)
 
@@ -107,7 +108,7 @@ lazy val core = (project in file("core"))
         "com.dimafeng" %% "testcontainers-scala-neo4j" % testcontainersScalaVersion,
         "org.testcontainers" % "neo4j" % testcontainersNeo4jVersion,
         "org.mockito" % "mockito-all" % mockitoVersion,
-        "org.slf4j" % "slf4j-simple" % slf4jVersion
+        "ch.qos.logback" % "logback-classic" % logbackVersion
       )
   )
 
@@ -135,8 +136,6 @@ lazy val monix = (project in file("monix"))
   .settings(
     name := "neotypes-monix",
     libraryDependencies ++= PROVIDED(
-      "org.typelevel" %% "cats-core" % catsVersion,
-      "org.typelevel" %% "cats-effect" % catsEffectsVersion,
       "io.monix" %% "monix-eval" % monixVersion
     )
   )
@@ -170,7 +169,8 @@ lazy val fs2Stream = (project in file("fs2-stream"))
     libraryDependencies ++= PROVIDED(
       "org.typelevel" %% "cats-core" % catsVersion,
       "org.typelevel" %% "cats-effect" % catsEffectsVersion,
-      "co.fs2" %% "fs2-core" % fs2Version
+      "co.fs2" %% "fs2-core" % fs2Version,
+      "co.fs2" %% "fs2-reactive-streams" % fs2Version
     )
   )
 
@@ -181,8 +181,6 @@ lazy val monixStream = (project in file("monix-stream"))
   .settings(
     name := "neotypes-monix-stream",
     libraryDependencies ++= PROVIDED(
-      "org.typelevel" %% "cats-core" % catsVersion,
-      "org.typelevel" %% "cats-effect" % catsEffectsVersion,
       "io.monix" %% "monix-eval" % monixVersion,
       "io.monix" %% "monix-reactive" % monixVersion
     )
@@ -196,7 +194,8 @@ lazy val zioStream = (project in file("zio-stream"))
     name := "neotypes-zio-stream",
     libraryDependencies ++= PROVIDED(
       "dev.zio" %% "zio"         % zioVersion,
-      "dev.zio" %% "zio-streams" % zioVersion
+      "dev.zio" %% "zio-streams" % zioVersion,
+      "dev.zio" %% "zio-interop-reactivestreams" % zioInteropReactiveStreamsVersion
     )
   )
 
@@ -220,6 +219,16 @@ lazy val catsData = (project in file("cats-data"))
     )
   )
 
+lazy val enumeratum = (project in file("enumeratum"))
+  .dependsOn(core % "compile->compile;test->test;provided->provided")
+  .settings(commonSettings)
+  .settings(
+    name := "neotypes-enumeratum",
+    libraryDependencies ++= PROVIDED(
+      "com.beachape" %% "enumeratum" % enumeratumVersion
+    )
+  )
+
 lazy val docsMappingsAPIDir = settingKey[String]("Name of subdirectory in site target directory for api docs")
 
 lazy val microsite = (project in file("site"))
@@ -233,6 +242,8 @@ lazy val microsite = (project in file("site"))
     micrositeHighlightTheme := "atom-one-light",
     micrositeHomepage := "https://neotypes.github.io/neotypes/",
     micrositeDocumentationUrl := "docs.html",
+    micrositeHomeButtonTarget := "repo",
+    micrositeSearchEnabled := true,
     micrositeGithubOwner := "neotypes",
     micrositeGithubRepo := "neotypes",
     micrositeBaseUrl := "/neotypes",
@@ -240,7 +251,7 @@ lazy val microsite = (project in file("site"))
     mdocIn := (Compile / sourceDirectory).value / "mdoc",
     autoAPIMappings := true,
     docsMappingsAPIDir := "api",
-    addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), docsMappingsAPIDir),
+    addMappingsToSiteDir(ScalaUnidoc / packageDoc / mappings, docsMappingsAPIDir),
     micrositeDocumentationLabelDescription := "API Documentation",
     micrositeDocumentationUrl := "/neotypes/api/neotypes/index.html",
     mdocExtraArguments := Seq("--no-link-hygiene"),
@@ -248,9 +259,9 @@ lazy val microsite = (project in file("site"))
     ScalaUnidoc / unidoc / scalacOptions ++= Seq(
       "-groups",
       "-doc-source-url",
-      scmInfo.value.get.browseUrl + "/tree/master€{FILE_PATH}.scala",
+      scmInfo.value.get.browseUrl + "/tree/main€{FILE_PATH}.scala",
       "-sourcepath",
-      baseDirectory.in(LocalRootProject).value.getAbsolutePath,
+      (LocalRootProject / baseDirectory).value.getAbsolutePath,
       "-diagrams"
     ),
     libraryDependencies += "org.neo4j.driver" % "neo4j-java-driver" % neo4jDriverVersion
@@ -264,5 +275,6 @@ lazy val microsite = (project in file("site"))
     monixStream % "compile->compile;provided->provided",
     zioStream % "compile->compile;provided->provided",
     catsData % "compile->compile;provided->provided",
-    refined % "compile->compile;provided->provided"
+    refined % "compile->compile;provided->provided",
+    enumeratum % "compile->compile;provided->provided"
   )

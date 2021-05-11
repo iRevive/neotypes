@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: ['*']
   push:
-    branches: ['master']
+    branches: ['main']
 
 jobs:
   build:
@@ -36,7 +36,13 @@ jobs:
           restore-keys: |
             cache-v1-
 
-      - name: Compile and Test
+      - name: Compile
+        run: ./sbt +test:compile
+
+      - name: Scaladoc
+        run: ./sbt +doc
+
+      - name: Test
         run: ./sbt +test
 
       - name: Setup Ruby
@@ -52,7 +58,7 @@ jobs:
 
   deploy-site:
     needs: build
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Find latest tag
